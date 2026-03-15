@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Order Service - Components
+
+System_Boundary(backendApp, 'Сервис заказов') {
+  Component(orderController, 'OrderController', 'Контроллер заказов')
+  Component(orderService, 'OrderService', 'Сервис заказов')
+  Component(orderRepository, 'OrderRepository', 'Репозиторий заказов')
+  Component(cacheRepository, 'CacheRepository', 'Репозиторий для работы с кэшом')
+  Component(paymentClient, 'PaymentClient', 'Клиент сервиса платежей')
+  ComponentDb(pgsql, 'DB', 'Заказы/платежи')
+  ComponentDb(cache, 'Cache', 'Горячие данные')
+}
+
+Rel(orderController, orderService, 'calls')
+Rel(orderService, cacheRepository, 'calls')
+Rel(orderService, orderRepository, 'calls')
+Rel(orderService, paymentClient, 'calls')
+Rel(orderRepository, pgsql, 'read/write')
+Rel(cacheRepository, cache, 'read/write')
+
+@enduml

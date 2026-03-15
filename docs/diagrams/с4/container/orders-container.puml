@@ -1,0 +1,24 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Order Service - Containers
+
+Person(user, 'Пользователь', 'Работает с заказами')
+
+System_Boundary(orderSystem, 'Сервис заказов') {
+  Container(web, 'FrontendApp', 'React', 'Фронтенд в браузере')
+  Container(backendApp, 'BackendApp', 'Spring Boot', 'Сервер обработки заказов')
+  ContainerDb(pgsql, 'БД', 'Postgres', 'Хранит основные данные по заказам')
+  ContainerDb(cache, 'Кэш', 'Redis', 'Хранит горячие данные, rate limiter')
+}
+
+System_Ext(paymentService, 'Payment Service', 'Система платежей')
+
+Rel(user, web, 'Работает с UI', 'HTTPS')
+Rel(web, backendApp, 'Взаимодействует по RESTAPI c бэкендом', 'HTTPS')
+Rel(backendApp, pgsql, 'Взаимодействует с БД по CRUD', 'JDBC')
+Rel(backendApp, cache, 'Работа с кэшом', 'RESP')
+Rel(backendApp, paymentService, 'Выполнение платежей', 'HTTPS')
+
+
+@enduml
