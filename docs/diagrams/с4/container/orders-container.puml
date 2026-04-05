@@ -1,0 +1,18 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Container(client, 'Клиент', 'Веб-интерфейс: React.js')
+
+System_Boundary(orderSystem, 'Система заказов') {
+  Container(monolithApp, 'Монолитное приложение', 'Java, Spring', 'Единственное развертывание: UI, backend app')
+  ContainerDb(pgDb, 'БД', 'Postgres', 'Хранит данные заказов')
+}
+
+System_Ext(payment, 'Система платежей')
+
+
+
+Rel(client, monolithApp, 'Работает с заказами', 'HTTPS')
+Rel(monolithApp, pgDb, 'CRUD-операции', 'SQL')
+Rel(monolithApp, payment, 'Оплата заказов', 'HTTPS')
+@enduml

@@ -1,0 +1,76 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(person, 'Пользователь')
+Container(ui, 'Веб-интерфейс', 'React')
+
+Container_Boundary(monolithApp, 'Монолит') {
+  '===модуль заказов===
+  Boundary(orders, 'Модуль заказов') {
+    Component(orderController, 'OrderController', 'orders.api', 'REST endpoint-ы')
+    Component(orderService, 'OrderService', 'orders.service', 'Логика работы с заказами')
+    Component(orderDomain, 'OrderEntity', 'orders.model', 'Модель заказа')
+    Component(orderRepository, 'OrderRepository', 'orders.repository', 'SQL-запросы, касающиеся заказов')
+  }
+  '===модуль пользователей===
+  Boundary(users, 'Модуль пользователей') {
+    Component(userFacade, 'UserFacade', 'users.api', 'Публичное API для других сервисов')
+    Component(userService, 'UserService', 'users.service', 'Логика работы с пользователем')
+    Component(userDomain, 'UserDomain', 'users.model', 'Модель клиента')
+    Component(userRepository, 'UserRepository', 'users.repository', 'SQL-запросы, касающиеся пользователя')
+  }
+  '===модуль оплаты
+  Boundary(payments, 'Модуль платежей') {
+    Component(paymentFacade, 'PaymentFacade', 'payments.api', 'Публичное API для других сервисов')
+    Component(paymentService, 'PaymentService', 'payments.service', 'Логика работы с платежами')
+    Component(paymentDomain, 'PaymentEntity', 'payments.model', 'Модель платежа')
+    Component(paymentClient, 'PaymentClient', 'payments.client', 'Клиент работы с внешним сервисом платежей')
+    Component(paymentRepository, 'PaymentRepository', 'payments.repository', 'SQL-запросы, касающиеся платежей')
+  }
+  '===модуль уведомлений
+  Boundary(notifications, 'Модуль уведомлений') {
+    Component(notificationFacade, 'NotificationFacade', 'notifications.api', 'Публичное API для других сервисов')
+    Component(notificationService, 'NotificationService', 'notifications.service', 'Логика работы с уведомлениями')
+    Component(notificationDomain, 'NotificationEntity', 'notifications.model', 'Модель уведомления')
+    Component(notificationSender, 'NotificationSender', 'notifications.client', 'Клиент работы с внешним сервисом уведомлений')
+    Component(notificationRepository, 'NotificationRepository', 'notifications.repository', 'SQL-запросы, касающиеся уведомлений')
+  }
+}
+
+System_Ext(paymentSystem, 'Система платежей')
+ComponentQueue_Ext(notificationKafka, 'NotificationKafka')
+
+ContainerDb(db, 'БД', 'Postgres', "Хранит данные всех модулей приложения")
+
+Rel(person, ui, 'HTTPS')
+Rel(ui, orders, 'HTTPS')
+
+Rel(orderController, orderService, 'вызывает')
+Rel(orderService, orderDomain, 'использует')
+Rel(orderService, orderRepository, 'вызывает')
+Rel(orderService, userFacade, 'обращается')
+Rel(orderService, paymentFacade, 'обращается')
+Rel(orderService, notificationFacade, 'обращается')
+Rel(orderRepository, db, 'JDBC')
+
+Rel(userFacade, userService, 'вызывает')
+Rel(userService, userDomain, 'использует')
+Rel(userService, userRepository, 'вызывает')
+Rel(userRepository, db, 'JDBC')
+
+Rel(paymentFacade, paymentService, 'вызывает')
+Rel(paymentService, paymentDomain, 'использует')
+Rel(paymentService, paymentClient, 'вызывает')
+Rel(paymentService, paymentRepository, 'вызывает')
+Rel(paymentRepository, db, 'JDBC')
+Rel(paymentClient, paymentSystem, 'HTTPS')
+
+Rel(notificationFacade, notificationService, 'вызывает')
+Rel(notificationService, notificationDomain, 'использует')
+Rel(notificationService, notificationRepository, 'вызывает')
+Rel(notificationService, notificationSender, 'вызывает')
+Rel(notificationSender, notificationKafka, 'Kafka Protokol')
+Rel(notificationRepository, db, 'JDBC')
+
+
+@enduml
