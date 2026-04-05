@@ -1,0 +1,30 @@
+@startuml
+actor User
+database Postgres
+queue KafkaTopic
+
+
+User -> Orders: Запрос формирования заказа
+
+Orders -> Users: Запрос на получение данных пользователя
+Users -> Postgres: Обращение в БД за данными пользователя
+Postgres --> Users: Возврат данных пользователя
+Users --> Orders: Результат с данными о пользователе
+
+Orders -> Postgres: Сохранение данных заказа
+Postgres --> Orders: Результат сохранения данных
+
+Orders -> Payments: Оплата заказа
+Payments -> ExternalPaymentSystem: Оплата заказа
+ExternalPaymentSystem --> Payments: Результат оплаты
+Payments -> Postgres: Сохранение данных по платежу
+Postgres --> Payments: Результат сохранения данных платежа
+Payments --> Orders: Результат оплаты заказа
+
+Orders -> Notifications: Отправить уведомление о статусе заказа
+Notifications -> KafkaTopic: Отправка уведомления
+
+Orders --> User: Заказ обработан
+
+
+@enduml
